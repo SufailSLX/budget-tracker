@@ -3,6 +3,7 @@ import { Bell, Settings, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   userName: string;
@@ -11,6 +12,7 @@ interface HeaderProps {
 export function Header({ userName }: HeaderProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const greetingRef = useRef<HTMLParagraphElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const tl = gsap.timeline();
@@ -53,7 +55,12 @@ export function Header({ userName }: HeaderProps) {
         <Button variant="ghost" size="icon" className="hover:bg-accent">
           <Bell className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="hover:bg-accent">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="hover:bg-accent"
+          onClick={() => navigate("/settings")}
+        >
           <Settings className="h-5 w-5" />
         </Button>
         <Button variant="ghost" size="icon" className="hover:bg-accent">

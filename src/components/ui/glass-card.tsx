@@ -6,9 +6,10 @@ interface GlassCardProps {
   className?: string;
   hover?: boolean;
   glow?: boolean;
+  onClick?: () => void;
 }
 
-export function GlassCard({ children, className, hover = false, glow = false }: GlassCardProps) {
+export function GlassCard({ children, className, hover = false, glow = false, onClick }: GlassCardProps) {
   return (
     <div
       className={cn(
@@ -16,8 +17,10 @@ export function GlassCard({ children, className, hover = false, glow = false }: 
         "transition-all duration-500 ease-smooth",
         hover && "hover:shadow-glow hover:border-neon/30 hover:-translate-y-1",
         glow && "animate-glow-pulse",
+        onClick && "cursor-pointer",
         className
       )}
+      onClick={onClick}
     >
       {children}
     </div>
