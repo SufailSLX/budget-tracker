@@ -63,7 +63,12 @@ export function Header({ userName }: HeaderProps) {
         >
           <Settings className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="hover:bg-accent">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="hover:bg-accent"
+          onClick={() => navigate("/profile")}
+        >
           <User className="h-5 w-5" />
         </Button>
       </div>
