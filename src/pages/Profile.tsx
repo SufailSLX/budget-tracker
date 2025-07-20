@@ -8,15 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUser } from "@/utils/storage";
-
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(getUser());
   const [monthlyBudget, setMonthlyBudget] = useState("");
   const [showSavingsSuggestions, setShowSavingsSuggestions] = useState(false);
-
   const containerVariants = {
-    hidden: { opacity: 0 },
+    hidden: {
+      opacity: 0
+    },
     visible: {
       opacity: 1,
       transition: {
@@ -25,9 +25,11 @@ const Profile = () => {
       }
     }
   };
-
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: {
+      opacity: 0,
+      y: 20
+    },
     visible: {
       opacity: 1,
       y: 0,
@@ -36,60 +38,38 @@ const Profile = () => {
       }
     }
   };
-
   const handleBudgetSubmit = () => {
     if (monthlyBudget) {
       setShowSavingsSuggestions(true);
     }
   };
-
   const getSavingsSuggestions = () => {
     const budget = parseFloat(monthlyBudget);
     if (!budget) return [];
-
-    return [
-      {
-        title: "Emergency Fund",
-        amount: Math.round(budget * 0.2),
-        description: "Save 20% for unexpected expenses"
-      },
-      {
-        title: "Investment Portfolio",
-        amount: Math.round(budget * 0.15),
-        description: "Invest 15% for long-term growth"
-      },
-      {
-        title: "Entertainment",
-        amount: Math.round(budget * 0.1),
-        description: "Allocate 10% for leisure activities"
-      }
-    ];
+    return [{
+      title: "Emergency Fund",
+      amount: Math.round(budget * 0.2),
+      description: "Save 20% for unexpected expenses"
+    }, {
+      title: "Investment Portfolio",
+      amount: Math.round(budget * 0.15),
+      description: "Invest 15% for long-term growth"
+    }, {
+      title: "Entertainment",
+      amount: Math.round(budget * 0.1),
+      description: "Allocate 10% for leisure activities"
+    }];
   };
-
-  return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+  return <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Animated background gradients */}
       <div className="absolute inset-0 bg-gradient-primary opacity-5 animate-glow-pulse"></div>
       <div className="absolute top-20 left-20 w-72 h-72 bg-neon/10 rounded-full blur-3xl animate-float"></div>
       <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float-delayed"></div>
 
-      <motion.div
-        className="relative z-10 container mx-auto px-4 py-8"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div className="relative z-10 container mx-auto px-4 py-8" variants={containerVariants} initial="hidden" animate="visible">
         {/* Header */}
-        <motion.div 
-          className="flex items-center mb-8"
-          variants={itemVariants}
-        >
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-            className="mr-4 hover:bg-glass-border/20"
-          >
+        <motion.div className="flex items-center mb-8" variants={itemVariants}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="mr-4 hover:bg-glass-border/20">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
@@ -115,11 +95,7 @@ const Profile = () => {
                       {user?.name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-glass-surface border-neon/30 hover:bg-neon/20"
-                  >
+                  <Button size="icon" variant="outline" className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-glass-surface border-neon/30 hover:bg-neon/20">
                     <Camera className="h-4 w-4" />
                   </Button>
                 </div>
@@ -147,10 +123,7 @@ const Profile = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Account Created</p>
                     <p className="font-medium">
-                      {user?.createdAt 
-                        ? new Date(user.createdAt).toLocaleDateString()
-                        : "Not available"
-                      }
+                      {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Not available"}
                     </p>
                   </div>
                 </div>
@@ -192,35 +165,30 @@ const Profile = () => {
                 <div>
                   <Label htmlFor="budget">Monthly Budget</Label>
                   <div className="flex space-x-2 mt-2">
-                    <Input
-                      id="budget"
-                      type="number"
-                      placeholder="Enter your monthly budget"
-                      value={monthlyBudget}
-                      onChange={(e) => setMonthlyBudget(e.target.value)}
-                      className="bg-glass-surface border-glass-border"
-                    />
+                    <Input id="budget" type="number" placeholder="Enter your monthly budget" value={monthlyBudget} onChange={e => setMonthlyBudget(e.target.value)} className="bg-glass-surface border-glass-border" />
                     <Button onClick={handleBudgetSubmit} className="bg-gradient-primary">
                       Calculate
                     </Button>
                   </div>
                 </div>
 
-                {showSavingsSuggestions && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    className="space-y-3 mt-6"
-                  >
+                {showSavingsSuggestions && <motion.div initial={{
+                opacity: 0,
+                height: 0
+              }} animate={{
+                opacity: 1,
+                height: "auto"
+              }} className="space-y-3 mt-6">
                     <h3 className="font-medium text-neon">Tailored Suggestions</h3>
-                    {getSavingsSuggestions().map((suggestion, index) => (
-                      <motion.div
-                        key={suggestion.title}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="bg-glass-surface p-3 rounded-lg border border-glass-border"
-                      >
+                    {getSavingsSuggestions().map((suggestion, index) => <motion.div key={suggestion.title} initial={{
+                  opacity: 0,
+                  x: -20
+                }} animate={{
+                  opacity: 1,
+                  x: 0
+                }} transition={{
+                  delay: index * 0.1
+                }} className="bg-glass-surface p-3 rounded-lg border border-glass-border">
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="font-medium">{suggestion.title}</p>
@@ -228,36 +196,16 @@ const Profile = () => {
                           </div>
                           <p className="text-lg font-bold text-neon">${suggestion.amount}</p>
                         </div>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
+                      </motion.div>)}
+                  </motion.div>}
               </div>
             </GlassCard>
           </motion.div>
 
           {/* Notifications Section */}
-          <motion.div variants={itemVariants}>
-            <GlassCard className="p-6 hover glow">
-              <h2 className="text-xl font-semibold mb-6 flex items-center">
-                <Bell className="mr-3 h-5 w-5 text-neon" />
-                Notifications
-              </h2>
-              
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-glass-surface rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Bell className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <p className="text-muted-foreground">
-                  No notifications right now — enjoy your day! ✨
-                </p>
-              </div>
-            </GlassCard>
-          </motion.div>
+          
         </div>
       </motion.div>
-    </div>
-  );
+    </div>;
 };
-
 export default Profile;
