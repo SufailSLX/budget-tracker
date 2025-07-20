@@ -3,6 +3,7 @@ import { Header } from "@/components/dashboard/header";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { AnimatedChart } from "@/components/dashboard/animated-chart";
 import { TransactionList } from "@/components/dashboard/transaction-list";
+import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,71 +67,19 @@ export default function Dashboard() {
     });
   };
 
-  const handleUserSetup = (name: string, email: string) => {
-    const newUser = saveUser({ name, email });
+  const handleUserSetup = (userData: { name: string; email: string; pin: string }) => {
+    const newUser = saveUser({ name: userData.name, email: userData.email, pin: userData.pin });
     setUser(newUser);
     setIsUserSetup(false);
     
     toast({
       title: "Welcome!",
-      description: `Welcome to Credit Tracker, ${name}!`,
+      description: `Welcome to Credit Tracker, ${userData.name}!`,
     });
   };
 
   if (isUserSetup) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
-        >
-          <div className="bg-card border border-glass-border rounded-lg p-8 shadow-card">
-            <div className="text-center mb-6">
-              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-                Credit Tracker
-              </h1>
-              <p className="text-muted-foreground">Set up your profile to get started</p>
-            </div>
-
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              handleUserSetup(
-                formData.get('name') as string,
-                formData.get('email') as string
-              );
-            }} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Enter your name"
-                  required
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  required
-                  className="mt-1"
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Get Started
-              </Button>
-            </form>
-          </div>
-        </motion.div>
-      </div>
-    );
+    return <OnboardingFlow onComplete={handleUserSetup} />;
   }
 
   return (

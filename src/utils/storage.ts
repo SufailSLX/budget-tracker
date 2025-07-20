@@ -14,6 +14,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  pin?: string;
   createdAt: number;
 }
 
