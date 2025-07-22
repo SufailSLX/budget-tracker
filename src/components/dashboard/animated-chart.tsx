@@ -105,7 +105,7 @@ export function AnimatedChart({ data, title }: AnimatedChartProps) {
               />
               <Line
                 type="monotone"
-                dataKey="debits"
+              dataKey="debits"
                 stroke="hsl(var(--destructive))"
                 strokeWidth={3}
                 dot={{ fill: 'hsl(var(--destructive))', strokeWidth: 2, r: 4 }}
