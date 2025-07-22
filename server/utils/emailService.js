@@ -2,16 +2,35 @@ const nodemailer = require('nodemailer');
 
 class EmailService {
   constructor() {
+    console.log('🔧 Initializing Email Service...');
+    console.log('📧 Email User:', process.env.EMAIL_USER ? 'Set' : 'Not set');
+    console.log('🔑 Email Pass:', process.env.EMAIL_PASS ? 'Set' : 'Not set');
+    
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
       }
     });
+    
+    // Verify transporter configuration
+    this.transporter.verify((error, success) => {
+      if (error) {
+        console.error('❌ Email service configuration error:', error);
+      } else {
+        console.log('✅ Email service is ready to send messages');
+      }
+    });
   }
 
   async sendOTP(email, fullName, otp) {
+    console.log(`📤 Attempting to send OTP to: ${email}`);
+    console.log(`🔢 OTP Code: ${otp}`);
+    
     const mailOptions = {
       from: {
         name: 'Credit Tracker',
@@ -128,10 +147,13 @@ class EmailService {
 
     try {
       const result = await this.transporter.sendMail(mailOptions);
-      console.log('✅ OTP email sent successfully:', result.messageId);
+      console.log('✅ OTP email sent successfully');
+      console.log('📨 Message ID:', result.messageId);
+      console.log('📬 Response:', result.response);
       return { success: true, messageId: result.messageId };
     } catch (error) {
-      console.error('❌ Failed to send OTP email:', error);
+      console.error('❌ Failed to send OTP email:', error.message);
+      console.error('🔍 Full error:', error);
       throw new Error('Failed to send verification email');
     }
   }

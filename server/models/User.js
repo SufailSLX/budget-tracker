@@ -110,36 +110,52 @@ userSchema.methods.comparePin = async function(candidatePin) {
 // Generate OTP method
 userSchema.methods.generateOTP = function() {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log('🔢 Generating OTP:', otp);
+  
   this.otp = {
     code: otp,
     expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     attempts: 0
   };
+  
+  console.log('💾 OTP data set:', this.otp);
   return otp;
 };
 
 // Verify OTP method
 userSchema.methods.verifyOTP = function(candidateOTP) {
+  console.log('🔐 Verifying OTP:', {
+    candidate: candidateOTP,
+    stored: this.otp?.code,
+    expires: this.otp?.expiresAt,
+    attempts: this.otp?.attempts
+  });
+  
   if (!this.otp || !this.otp.code) {
+    console.log('❌ No OTP found');
     return { success: false, message: 'No OTP found' };
   }
   
   if (this.otp.expiresAt < new Date()) {
+    console.log('❌ OTP expired');
     return { success: false, message: 'OTP has expired' };
   }
   
   if (this.otp.attempts >= 3) {
+    console.log('❌ Too many attempts');
     return { success: false, message: 'Too many failed attempts' };
   }
   
   if (this.otp.code !== candidateOTP) {
     this.otp.attempts += 1;
+    console.log('❌ Invalid OTP, attempts:', this.otp.attempts);
     return { success: false, message: 'Invalid OTP' };
   }
   
   // OTP is valid
   this.isVerified = true;
   this.otp = undefined;
+  console.log('✅ OTP verified successfully');
   return { success: true, message: 'OTP verified successfully' };
 };
 

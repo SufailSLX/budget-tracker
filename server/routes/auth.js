@@ -66,8 +66,11 @@ const generateToken = (userId) => {
 // Step 1: Register user and send OTP
 router.post('/register', validateRegistration, async (req, res) => {
   try {
+    console.log('🚀 Registration attempt:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -79,6 +82,8 @@ router.post('/register', validateRegistration, async (req, res) => {
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
+    console.log('🔍 Existing user check:', existingUser ? 'User exists' : 'New user');
+    
     if (existingUser) {
       if (existingUser.isVerified) {
         return res.status(400).json({
@@ -89,9 +94,20 @@ router.post('/register', validateRegistration, async (req, res) => {
       
       // User exists but not verified, resend OTP
       const otp = existingUser.generateOTP();
+      console.log('🔄 Regenerating OTP for existing user:', otp);
       await existingUser.save();
+      console.log('💾 User saved with new OTP');
       
-      await emailService.sendOTP(email, fullName, otp);
+      try {
+        await emailService.sendOTP(email, fullName, otp);
+        console.log('📧 OTP email sent successfully');
+      } catch (emailError) {
+        console.error('❌ Email sending failed:', emailError);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to send verification email. Please try again.'
+        });
+      }
       
       return res.json({
         success: true,
@@ -108,10 +124,23 @@ router.post('/register', validateRegistration, async (req, res) => {
     });
 
     const otp = user.generateOTP();
+    console.log('🆕 Generated OTP for new user:', otp);
     await user.save();
+    console.log('💾 New user saved to database');
 
     // Send OTP email
-    await emailService.sendOTP(email, fullName, otp);
+    try {
+      await emailService.sendOTP(email, fullName, otp);
+      console.log('📧 OTP email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError);
+      // Delete the user if email fails
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email. Please try again.'
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -120,7 +149,8 @@ router.post('/register', validateRegistration, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('❌ Registration error:', error.message);
+    console.error('🔍 Full error:', error);
     res.status(500).json({
       success: false,
       message: 'Registration failed. Please try again.'
@@ -131,6 +161,8 @@ router.post('/register', validateRegistration, async (req, res) => {
 // Step 2: Verify OTP
 router.post('/verify-otp', validateOTP, async (req, res) => {
   try {
+    console.log('🔐 OTP verification attempt:', { email: req.body.email, otp: req.body.otp });
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -143,16 +175,30 @@ router.post('/verify-otp', validateOTP, async (req, res) => {
     const { email, otp } = req.body;
 
     const user = await User.findOne({ email });
+    console.log('👤 User found:', user ? 'Yes' : 'No');
+    
     if (!user) {
+      console.log('❌ User not found for email:', email);
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
+    console.log('🔍 User OTP data:', {
+      storedOTP: user.otp?.code,
+      providedOTP: otp,
+      expiresAt: user.otp?.expiresAt,
+      attempts: user.otp?.attempts,
+      currentTime: new Date()
+    });
+
     const otpResult = user.verifyOTP(otp);
+    console.log('✅ OTP verification result:', otpResult);
+    
     if (!otpResult.success) {
       await user.save(); // Save updated attempt count
+      console.log('❌ OTP verification failed:', otpResult.message);
       return res.status(400).json({
         success: false,
         message: otpResult.message
@@ -160,6 +206,7 @@ router.post('/verify-otp', validateOTP, async (req, res) => {
     }
 
     await user.save();
+    console.log('✅ User verified and saved');
 
     res.json({
       success: true,
@@ -168,7 +215,8 @@ router.post('/verify-otp', validateOTP, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('OTP verification error:', error);
+    console.error('❌ OTP verification error:', error.message);
+    console.error('🔍 Full error:', error);
     res.status(500).json({
       success: false,
       message: 'Verification failed. Please try again.'

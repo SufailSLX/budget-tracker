@@ -61,15 +61,45 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             description: "Please enter both your name and email.",
             variant: "destructive"
           });
+          setIsLoading(false);
           return;
         }
-        // Simulate OTP sending
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        toast({
-          title: "OTP Sent!",
-          description: "Check your email for the verification code.",
-        });
-        setStep(2);
+        
+        try {
+          const response = await fetch('http://localhost:5000/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fullName: name,
+              email: email
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            toast({
+              title: "OTP Sent!",
+              description: "Check your email for the verification code.",
+            });
+            setStep(2);
+          } else {
+            toast({
+              title: "Registration Failed",
+              description: data.message || "Please try again.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('Registration error:', error);
+          toast({
+            title: "Network Error",
+            description: "Please check your connection and try again.",
+            variant: "destructive"
+          });
+        }
       } else if (step === 2) {
         setStep(3);
       } else if (step === 3) {
@@ -79,15 +109,45 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             description: "Please enter the 6-digit code from your email.",
             variant: "destructive"
           });
+          setIsLoading(false);
           return;
         }
-        // Simulate OTP verification
-        await new Promise(resolve => setTimeout(resolve, 800));
-        toast({
-          title: "Email verified!",
-          description: "Now let's set up your PIN.",
-        });
-        setStep(4);
+        
+        try {
+          const response = await fetch('http://localhost:5000/api/auth/verify-otp', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: email,
+              otp: otp
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            toast({
+              title: "Email verified!",
+              description: "Now let's set up your PIN.",
+            });
+            setStep(4);
+          } else {
+            toast({
+              title: "Verification Failed",
+              description: data.message || "Please check your OTP and try again.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('OTP verification error:', error);
+          toast({
+            title: "Network Error",
+            description: "Please check your connection and try again.",
+            variant: "destructive"
+          });
+        }
       } else if (step === 4) {
         if (pin.length !== 4 || confirmPin.length !== 4) {
           toast({
@@ -95,6 +155,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             description: "Please enter a 4-digit PIN.",
             variant: "destructive"
           });
+          setIsLoading(false);
           return;
         }
         if (pin !== confirmPin) {
@@ -103,13 +164,46 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             description: "Please make sure both PINs are the same.",
             variant: "destructive"
           });
+          setIsLoading(false);
           return;
         }
-        setStep(5);
-        // Complete setup after a brief delay
-        setTimeout(() => {
-          onComplete({ name, email, pin });
-        }, 2000);
+        
+        try {
+          const response = await fetch('http://localhost:5000/api/auth/set-pin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: email,
+              pin: pin,
+              confirmPin: confirmPin
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            setStep(5);
+            // Complete setup after a brief delay
+            setTimeout(() => {
+              onComplete({ name, email, pin });
+            }, 2000);
+          } else {
+            toast({
+              title: "PIN Setup Failed",
+              description: data.message || "Please try again.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('PIN setup error:', error);
+          toast({
+            title: "Network Error",
+            description: "Please check your connection and try again.",
+            variant: "destructive"
+          });
+        }
       }
     } finally {
       setIsLoading(false);

@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config({ path: '../.env' });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -38,10 +39,29 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+const connectDB = async () => {
+  try {
+    console.log('🔄 Attempting to connect to MongoDB...');
+    console.log('📍 MongoDB URI:', process.env.MONGODB_URI ? 'URI loaded successfully' : 'URI not found');
+    
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: 'credit-tracker'
+    });
+    
+    console.log('✅ Connected to MongoDB successfully');
+    console.log(`📊 Database: ${conn.connection.name}`);
+    console.log(`🌐 Host: ${conn.connection.host}:${conn.connection.port}`);
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    console.error('🔍 Full error:', error);
+    process.exit(1);
+  }
+};
+
+// Connect to database
+connectDB();
 .then(() => {
   console.log('✨ Connected to MongoDB successfully');
 })
