@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { Footer } from "@/components/ui/footer";
 import { getTransactions, saveTransaction, getMonthlyData, getStats, getCategories, getUser, saveUser } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -24,8 +26,10 @@ export default function Dashboard() {
   // Form states
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [type, setType] = useState<"credit" | "expense">("expense");
+  const [type, setType] = useState<"credit" | "debit">("debit");
   const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     if (!user) {
@@ -38,10 +42,10 @@ export default function Dashboard() {
   const categories = getCategories();
 
   const handleAddTransaction = () => {
-    if (!title || !amount || !category) {
+    if (!title || !amount) {
       toast({
         title: "Error",
-        description: "Please fill in all fields",
+        description: "Please fill in title and amount",
         variant: "destructive"
       });
       return;
@@ -51,19 +55,22 @@ export default function Dashboard() {
       title,
       amount: parseFloat(amount),
       type,
-      category,
-      date: new Date().toISOString().split('T')[0]
+      category: category || "Other",
+      date,
+      description
     });
 
     setTransactions([newTransaction, ...transactions]);
     setTitle("");
     setAmount("");
     setCategory("");
+    setDescription("");
+    setDate(new Date().toISOString().split('T')[0]);
     setIsDialogOpen(false);
 
     toast({
       title: "Success",
-      description: `${type === "credit" ? "Credit" : "Expense"} added successfully!`,
+      description: `${type === "credit" ? "Credit" : "Debit"} added successfully!`,
     });
   };
 
@@ -102,10 +109,10 @@ export default function Dashboard() {
             index={0}
           />
           <StatsCard
-            title="Total Expenses"
-            value={stats.totalExpenses.value}
-            change={stats.totalExpenses.change}
-            icon="expense"
+            title="Total Debits"
+            value={stats.totalDebits.value}
+            change={stats.totalDebits.change}
+            icon="debit"
             index={1}
           />
           <StatsCard
@@ -119,7 +126,7 @@ export default function Dashboard() {
 
         {/* Chart and Transactions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <AnimatedChart data={chartData} title="6-Month Overview" />
+          <AnimatedChart data={chartData} title="Spending Trends - 6 Month Overview" />
           <TransactionList
             transactions={transactions.slice(0, 8)}
             onAddTransaction={() => setIsDialogOpen(true)}
@@ -130,11 +137,11 @@ export default function Dashboard() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add New Transaction</DialogTitle>
+              <DialogTitle>💰 Add New Transaction</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">Transaction Title *</Label>
                 <Input
                   id="title"
                   placeholder="Transaction title"
@@ -144,35 +151,55 @@ export default function Dashboard() {
               </div>
               
               <div>
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">Amount *</Label>
                 <Input
                   id="amount"
                   type="number"
-                  placeholder="0.00"
+                  placeholder="Enter amount"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />
               </div>
 
               <div>
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Add a description (optional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <div>
                 <Label>Type</Label>
-                <RadioGroup value={type} onValueChange={(value: "credit" | "expense") => setType(value)}>
+                <RadioGroup value={type} onValueChange={(value: "credit" | "debit") => setType(value)}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="credit" id="credit" />
-                    <Label htmlFor="credit">Credit</Label>
+                    <Label htmlFor="credit">💰 Credit</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="expense" id="expense" />
-                    <Label htmlFor="expense">Expense</Label>
+                    <RadioGroupItem value="debit" id="debit" />
+                    <Label htmlFor="debit">💸 Debit</Label>
                   </div>
                 </RadioGroup>
               </div>
 
               <div>
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Category (Optional)</Label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder="Choose category (optional)" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
@@ -185,16 +212,18 @@ export default function Dashboard() {
               </div>
 
               <div className="flex space-x-2 pt-4">
-                <Button onClick={handleAddTransaction} className="flex-1">
+                <Button onClick={handleAddTransaction} className="flex-1 hover:shadow-glow transition-all duration-300">
                   Add Transaction
                 </Button>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="hover:bg-accent transition-all duration-300">
                   Cancel
                 </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
+
+        <Footer />
       </main>
     </div>
   );

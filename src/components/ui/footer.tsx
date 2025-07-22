@@ -14,7 +14,7 @@ export function Footer() {
   }, []);
 
   return (
-    <footer ref={footerRef} className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t border-border py-4 z-10">
+    <footer ref={footerRef} className="mt-16 py-8 border-t border-border bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto px-4 text-center">
         <p className="text-sm text-muted-foreground">
           Powered by{' '}

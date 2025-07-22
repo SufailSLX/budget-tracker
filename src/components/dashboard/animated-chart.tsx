@@ -17,6 +17,7 @@ interface AnimatedChartProps {
 
 export function AnimatedChart({ data, title }: AnimatedChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<gsap.core.Tween>();
 
   useEffect(() => {
     if (chartRef.current) {
@@ -32,15 +33,21 @@ export function AnimatedChart({ data, title }: AnimatedChartProps) {
         }
       );
       
-      // Continuous animation for chart elements
-      gsap.to(chartRef.current, {
+      // Non-stop continuous floating animation
+      animationRef.current = gsap.to(chartRef.current, {
         y: -5,
-        duration: 2,
+        duration: 3,
         ease: "power2.inOut",
         yoyo: true,
         repeat: -1
       });
     }
+
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.kill();
+      }
+    };
   }, []);
 
   const CustomTooltip = ({ active, payload, label }: any) => {

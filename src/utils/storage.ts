@@ -4,9 +4,10 @@ interface Transaction {
   id: string;
   title: string;
   amount: number;
-  type: "credit" | "expense";
+  type: "credit" | "debit";
   category: string;
   date: string;
+  description?: string;
   createdAt: number;
 }
 
@@ -128,14 +129,14 @@ export const getMonthlyData = () => {
       .filter(tx => tx.type === 'credit')
       .reduce((sum, tx) => sum + tx.amount, 0);
     
-    const expenses = monthTransactions
-      .filter(tx => tx.type === 'expense')
+    const debits = monthTransactions
+      .filter(tx => tx.type === 'debit')
       .reduce((sum, tx) => sum + tx.amount, 0);
     
     last6Months.push({
       name: monthName,
       credits,
-      expenses
+      debits
     });
   }
   
@@ -155,20 +156,21 @@ const generateSampleData = (): Transaction[] => {
     const isCredit = Math.random() > 0.7; // 30% chance of credit
     const amount = isCredit 
       ? Math.floor(Math.random() * 3000) + 1000 // Credits: $1000-$4000
-      : Math.floor(Math.random() * 500) + 20;   // Expenses: $20-$520
+      : Math.floor(Math.random() * 500) + 20;   // Debits: $20-$520
     
     const creditTitles = ['Salary Payment', 'Freelance Project', 'Investment Return', 'Bonus', 'Refund'];
-    const expenseTitles = ['Grocery Shopping', 'Gas Station', 'Restaurant', 'Movie Tickets', 'Coffee Shop', 'Online Purchase'];
+    const debitTitles = ['Grocery Shopping', 'Gas Station', 'Restaurant', 'Movie Tickets', 'Coffee Shop', 'Online Purchase'];
     
     sampleData.push({
       id: `sample_${i}`,
       title: isCredit 
         ? creditTitles[Math.floor(Math.random() * creditTitles.length)]
-        : expenseTitles[Math.floor(Math.random() * expenseTitles.length)],
+        : debitTitles[Math.floor(Math.random() * debitTitles.length)],
       amount,
-      type: isCredit ? 'credit' : 'expense',
+      type: isCredit ? 'credit' : 'debit',
       category: categories[Math.floor(Math.random() * categories.length)],
       date: date.toISOString().split('T')[0],
+      description: Math.random() > 0.5 ? 'Sample transaction description' : undefined,
       createdAt: date.getTime()
     });
   }
@@ -192,20 +194,20 @@ export const getStats = () => {
   });
   
   const currentCredits = currentMonthTx.filter(tx => tx.type === 'credit').reduce((sum, tx) => sum + tx.amount, 0);
-  const currentExpenses = currentMonthTx.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
-  const currentBalance = currentCredits - currentExpenses;
+  const currentDebits = currentMonthTx.filter(tx => tx.type === 'debit').reduce((sum, tx) => sum + tx.amount, 0);
+  const currentBalance = currentCredits - currentDebits;
   
   const lastCredits = lastMonthTx.filter(tx => tx.type === 'credit').reduce((sum, tx) => sum + tx.amount, 0);
-  const lastExpenses = lastMonthTx.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
-  const lastBalance = lastCredits - lastExpenses;
+  const lastDebits = lastMonthTx.filter(tx => tx.type === 'debit').reduce((sum, tx) => sum + tx.amount, 0);
+  const lastBalance = lastCredits - lastDebits;
   
   const creditChange = lastCredits === 0 ? 100 : ((currentCredits - lastCredits) / lastCredits) * 100;
-  const expenseChange = lastExpenses === 0 ? 100 : ((currentExpenses - lastExpenses) / lastExpenses) * 100;
+  const debitChange = lastDebits === 0 ? 100 : ((currentDebits - lastDebits) / lastDebits) * 100;
   const balanceChange = lastBalance === 0 ? 100 : ((currentBalance - lastBalance) / Math.abs(lastBalance)) * 100;
   
   return {
     totalCredits: { value: currentCredits, change: Math.round(creditChange) },
-    totalExpenses: { value: currentExpenses, change: Math.round(expenseChange) },
+    totalDebits: { value: currentDebits, change: Math.round(debitChange) },
     balance: { value: currentBalance, change: Math.round(balanceChange) }
   };
 };

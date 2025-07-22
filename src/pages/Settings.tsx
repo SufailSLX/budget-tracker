@@ -7,6 +7,7 @@ import { ArrowLeft, Moon, Sun, Heart, HelpCircle, Lock, Info, Star, MessageSquar
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Footer } from "@/components/ui/footer";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -225,6 +226,8 @@ const Settings = () => {
             Every interaction, every transition — smoother than your favorite playlist fade.
           </motion.div>
         </div>
+
+        <Footer />
       </motion.div>
     </div>
   );

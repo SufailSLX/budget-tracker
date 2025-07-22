@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUser } from "@/utils/storage";
+import { Footer } from "@/components/ui/footer";
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(getUser());
@@ -205,6 +206,8 @@ const Profile = () => {
           {/* Notifications Section */}
           
         </div>
+
+        <Footer />
       </motion.div>
     </div>;
 };
