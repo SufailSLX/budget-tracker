@@ -8,7 +8,7 @@ interface StatsCardProps {
   title: string;
   value: number;
   change: number;
-  icon: "credit" | "expense" | "balance";
+  icon: "credit" | "debit" | "balance";
   index: number;
 }
 
@@ -41,7 +41,7 @@ export function StatsCard({ title, value, change, icon, index }: StatsCardProps)
     switch (icon) {
       case "credit":
         return <TrendingUp className="h-6 w-6 text-success" />;
-      case "expense":
+      case "debit":
         return <TrendingDown className="h-6 w-6 text-destructive" />;
       case "balance":
         return <DollarSign className="h-6 w-6 text-neon" />;

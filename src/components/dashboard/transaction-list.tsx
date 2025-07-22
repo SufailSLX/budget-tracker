@@ -8,7 +8,7 @@ interface Transaction {
   id: string;
   title: string;
   amount: number;
-  type: "credit" | "expense";
+  type: "credit" | "debit";
   category: string;
   date: string;
 }

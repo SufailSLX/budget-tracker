@@ -7,7 +7,7 @@ import { gsap } from "gsap";
 interface ChartData {
   name: string;
   credits: number;
-  expenses: number;
+  debits: number;
 }
 
 interface AnimatedChartProps {
@@ -31,6 +31,15 @@ export function AnimatedChart({ data, title }: AnimatedChartProps) {
           ease: "back.out(1.7)"
         }
       );
+      
+      // Continuous animation for chart elements
+      gsap.to(chartRef.current, {
+        y: -5,
+        duration: 2,
+        ease: "power2.inOut",
+        yoyo: true,
+        repeat: -1
+      });
     }
   }, []);
 
@@ -89,7 +98,7 @@ export function AnimatedChart({ data, title }: AnimatedChartProps) {
               />
               <Line
                 type="monotone"
-                dataKey="expenses"
+                dataKey="debits"
                 stroke="hsl(var(--destructive))"
                 strokeWidth={3}
                 dot={{ fill: 'hsl(var(--destructive))', strokeWidth: 2, r: 4 }}
