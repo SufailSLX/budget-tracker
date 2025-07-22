@@ -61,7 +61,7 @@ const connectDB = async () => {
 };
 
 // Connect to database
-connectDB();
+connectDB()
 .then(() => {
   console.log('✨ Connected to MongoDB successfully');
 })
