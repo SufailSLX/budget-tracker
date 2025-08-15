@@ -128,16 +128,16 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const currentStep = steps[step - 1];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-3 sm:p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-md"
       >
-        <GlassCard className="p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+        <GlassCard className="p-6 sm:p-8">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
               Credit Tracker
             </h1>
             
@@ -159,7 +159,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               </div>
             </div>
             
-            <h2 className="text-xl font-semibold mb-2">{currentStep.title}</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-2">{currentStep.title}</h2>
             <p className="text-muted-foreground text-sm">{currentStep.description}</p>
           </div>
 
@@ -298,7 +298,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <Button 
               onClick={handleNext}
               disabled={isLoading}
-              className="w-full mt-6"
+              className="w-full mt-6 h-12 text-base"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">
@@ -306,7 +306,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   <span>Processing...</span>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center space-x-2">
                   <span>{step === 2 ? "I've checked" : step === 4 ? "Set PIN" : "Continue"}</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>

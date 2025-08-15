@@ -25,12 +25,13 @@ export function TransactionList({ transactions, onAddTransaction }: TransactionL
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.6 }}
     >
-      <GlassCard className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-foreground">Recent Transactions</h3>
-          <Button onClick={onAddTransaction} size="sm" className="bg-primary hover:bg-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Transaction
+      <GlassCard className="p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">Recent Transactions</h3>
+          <Button onClick={onAddTransaction} size="sm" className="bg-primary hover:bg-primary/90 h-9 px-3 text-sm">
+            <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Add Transaction</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
 
@@ -46,31 +47,31 @@ export function TransactionList({ transactions, onAddTransaction }: TransactionL
                 type: "spring",
                 stiffness: 200
               }}
-              className="flex items-center justify-between p-4 border border-glass-border rounded-lg backdrop-blur-sm hover:border-neon/30 transition-all duration-300"
+              className="flex items-center justify-between p-3 sm:p-4 border border-glass-border rounded-lg backdrop-blur-sm hover:border-neon/30 transition-all duration-300"
             >
-              <div className="flex items-center space-x-4">
-                <div className={`p-2 rounded-full ${
+              <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+                <div className={`p-1.5 sm:p-2 rounded-full shrink-0 ${
                   transaction.type === "credit" 
                     ? "bg-success/20 text-success" 
                     : "bg-destructive/20 text-destructive"
                 }`}>
                   {transaction.type === "credit" ? (
-                    <ArrowUpRight className="h-4 w-4" />
+                    <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4" />
                   ) : (
-                    <ArrowDownLeft className="h-4 w-4" />
+                    <ArrowDownLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                   )}
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">{transaction.title}</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <Badge variant="secondary" className="text-xs">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-foreground text-sm sm:text-base truncate">{transaction.title}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mt-1 space-y-1 sm:space-y-0">
+                    <Badge variant="secondary" className="text-xs w-fit">
                       {transaction.category}
                     </Badge>
                     <span className="text-xs text-muted-foreground">{transaction.date}</span>
                   </div>
                 </div>
               </div>
-              <div className={`text-lg font-semibold ${
+              <div className={`text-sm sm:text-lg font-semibold shrink-0 ml-2 ${
                 transaction.type === "credit" ? "text-success" : "text-destructive"
               }`}>
                 {transaction.type === "credit" ? "+" : "-"}${transaction.amount}

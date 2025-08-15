@@ -93,13 +93,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Header userName={user?.name || "User"} />
 
-      <main className="p-6 space-y-8">
+      <main className="p-3 sm:p-6 space-y-6 sm:space-y-8 pb-20">
         {/* Stats Cards */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"
         >
           <StatsCard
             title="Total Credits"
@@ -125,7 +125,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Chart and Transactions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           <AnimatedChart data={chartData} title="Spending Trends - 6 Month Overview" />
           <TransactionList
             transactions={transactions.slice(0, 8)}
@@ -135,7 +135,7 @@ export default function Dashboard() {
 
         {/* Add Transaction Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md w-[95vw] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>💰 Add New Transaction</DialogTitle>
             </DialogHeader>
@@ -211,11 +211,11 @@ export default function Dashboard() {
                 </Select>
               </div>
 
-              <div className="flex space-x-2 pt-4">
-                <Button onClick={handleAddTransaction} className="flex-1 hover:shadow-glow transition-all duration-300">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
+                <Button onClick={handleAddTransaction} className="flex-1 hover:shadow-glow transition-all duration-300 h-12 sm:h-10">
                   Add Transaction
                 </Button>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="hover:bg-accent transition-all duration-300">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="hover:bg-accent transition-all duration-300 h-12 sm:h-10">
                   Cancel
                 </Button>
               </div>
