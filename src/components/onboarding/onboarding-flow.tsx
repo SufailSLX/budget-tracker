@@ -65,41 +65,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           return;
         }
         
-        try {
-          const response = await fetch('http://localhost:5000/api/auth/register', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              fullName: name,
-              email: email
-            })
-          });
-          
-          const data = await response.json();
-          
-          if (data.success) {
-            toast({
-              title: "OTP Sent!",
-              description: "Check your email for the verification code.",
-            });
-            setStep(2);
-          } else {
-            toast({
-              title: "Registration Failed",
-              description: data.message || "Please try again.",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error('Registration error:', error);
-          toast({
-            title: "Network Error",
-            description: "Please check your connection and try again.",
-            variant: "destructive"
-          });
-        }
+        // Simulate registration success (no backend required)
+        toast({
+          title: "OTP Sent!",
+          description: "Check your email for the verification code.",
+        });
+        setStep(2);
       } else if (step === 2) {
         setStep(3);
       } else if (step === 3) {
@@ -113,41 +84,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           return;
         }
         
-        try {
-          const response = await fetch('http://localhost:5000/api/auth/verify-otp', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: email,
-              otp: otp
-            })
-          });
-          
-          const data = await response.json();
-          
-          if (data.success) {
-            toast({
-              title: "Email verified!",
-              description: "Now let's set up your PIN.",
-            });
-            setStep(4);
-          } else {
-            toast({
-              title: "Verification Failed",
-              description: data.message || "Please check your OTP and try again.",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error('OTP verification error:', error);
-          toast({
-            title: "Network Error",
-            description: "Please check your connection and try again.",
-            variant: "destructive"
-          });
-        }
+        // Simulate OTP verification (accept any 6-digit code)
+        toast({
+          title: "Email verified!",
+          description: "Now let's set up your PIN.",
+        });
+        setStep(4);
       } else if (step === 4) {
         if (pin.length !== 4 || confirmPin.length !== 4) {
           toast({
@@ -168,42 +110,15 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           return;
         }
         
-        try {
-          const response = await fetch('http://localhost:5000/api/auth/set-pin', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: email,
-              pin: pin,
-              confirmPin: confirmPin
-            })
-          });
-          
-          const data = await response.json();
-          
-          if (data.success) {
-            setStep(5);
-            // Complete setup after a brief delay
-            setTimeout(() => {
-              onComplete({ name, email, pin });
-            }, 2000);
-          } else {
-            toast({
-              title: "PIN Setup Failed",
-              description: data.message || "Please try again.",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error('PIN setup error:', error);
-          toast({
-            title: "Network Error",
-            description: "Please check your connection and try again.",
-            variant: "destructive"
-          });
-        }
+        // Save user data to localStorage
+        const userData = { name, email, pin };
+        localStorage.setItem('credit_tracker_user', JSON.stringify(userData));
+        
+        setStep(5);
+        // Complete setup after a brief delay
+        setTimeout(() => {
+          onComplete({ name, email, pin });
+        }, 2000);
       }
     } finally {
       setIsLoading(false);
