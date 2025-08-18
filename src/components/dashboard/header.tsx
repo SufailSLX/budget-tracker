@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Bell, Settings, User, LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
@@ -70,6 +71,7 @@ export function Header({ userName }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-3">
+          <ModeToggle />
           <Button 
             variant="ghost" 
             size="icon" 

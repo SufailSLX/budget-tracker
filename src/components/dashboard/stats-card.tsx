@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, CreditCard, Wallet, Scale } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
@@ -58,14 +59,14 @@ export function StatsCard({ title, value, change, icon, index }: StatsCardProps)
         </div>
         
         <div className="space-y-1">
-          <motion.p 
+          <motion.div
             className="text-xl sm:text-2xl font-bold"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.4, delay: index * 0.1 + 0.2 }}
           >
-            ${value.toLocaleString()}
-          </motion.p>
+            <AnimatedCounter value={value} duration={2} />
+          </motion.div>
           <p className="text-xs text-muted-foreground">
             {isPositive ? "↗" : "↘"} {Math.abs(change)}% from last month
           </p>
