@@ -64,7 +64,7 @@ export function Header({ userName }: HeaderProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 ref={titleRef} className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Credit Tracker
+            Tracker - it
           </h1>
           <p ref={greetingRef} className="text-sm sm:text-base text-muted-foreground mt-1">
             {getGreeting()}, {userName}! 👋

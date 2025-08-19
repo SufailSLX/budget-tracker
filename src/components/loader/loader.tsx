@@ -12,7 +12,7 @@ export function Loader({ onComplete }: LoaderProps) {
   const textRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const tl = gsap.timeline({
+    const tl = gsap.timeline({ 
       onComplete: () => {
         setTimeout(onComplete, 500);
       }
