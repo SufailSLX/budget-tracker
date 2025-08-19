@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Bell, Settings, User, LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { LogoutModal } from "@/components/auth/logout-modal";
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +16,7 @@ interface HeaderProps {
 export function Header({ userName }: HeaderProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const greetingRef = useRef<HTMLParagraphElement>(null);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -39,15 +41,14 @@ export function Header({ userName }: HeaderProps) {
     return "Good evening";
   };
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleLogoutConfirm = () => {
     // Clear user data from localStorage
     localStorage.removeItem('credit_tracker_user');
     localStorage.removeItem('hasSeenOnboarding');
-    
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account.",
-    });
     
     // Reload the page to trigger the onboarding flow
     window.location.reload();
@@ -104,7 +105,7 @@ export function Header({ userName }: HeaderProps) {
                 Profile
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+              <DropdownMenuItem onClick={handleLogoutClick} className="cursor-pointer text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </DropdownMenuItem>
@@ -112,6 +113,12 @@ export function Header({ userName }: HeaderProps) {
           </DropdownMenu>
         </div>
       </div>
+
+      <LogoutModal 
+        isOpen={isLogoutModalOpen} 
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogoutConfirm}
+      />
     </motion.header>
   );
 }

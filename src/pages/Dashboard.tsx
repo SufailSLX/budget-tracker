@@ -4,7 +4,6 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { TradingChart } from "@/components/dashboard/trading-chart";
 import { TransactionList } from "@/components/dashboard/transaction-list";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
-import { LoginModal } from "@/components/auth/login-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +21,6 @@ export default function Dashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [user, setUser] = useState(getUser());
   const [isUserSetup, setIsUserSetup] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
 
   // Form states
@@ -37,10 +34,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) {
       setIsUserSetup(true);
-    } else if (!isLoggedIn) {
-      setIsLoginModalOpen(true);
     }
-  }, [user, isLoggedIn]);
+  }, [user]);
 
   const stats = getStats();
   const chartData = getMonthlyData();
@@ -83,17 +78,11 @@ export default function Dashboard() {
     const newUser = saveUser({ name: userData.name, email: userData.email, pin: userData.pin });
     setUser(newUser);
     setIsUserSetup(false);
-    setIsLoggedIn(true);
     
     toast({
       title: "Welcome!",
       description: `Welcome to Credit Tracker, ${userData.name}!`,
     });
-  };
-
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
-    setIsLoginModalOpen(false);
   };
 
   // Transform chart data to include balance calculation
@@ -110,23 +99,6 @@ export default function Dashboard() {
     return <OnboardingFlow onComplete={handleUserSetup} />;
   }
 
-  if (!isLoggedIn) {
-    return (
-      <>
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">Credit Tracker</h1>
-            <p className="text-muted-foreground">Please login to continue</p>
-          </div>
-        </div>
-        <LoginModal 
-          isOpen={isLoginModalOpen} 
-          onClose={() => setIsLoginModalOpen(false)}
-          onSuccess={handleLoginSuccess}
-        />
-      </>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
