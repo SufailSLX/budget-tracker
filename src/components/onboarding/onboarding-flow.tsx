@@ -15,8 +15,6 @@ interface OnboardingFlowProps {
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -25,18 +23,8 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const steps = [
     {
       title: "Enter your details",
-      description: "We'll use this to send you a secure one-time password (OTP).",
+      description: "Let's get you set up with your account details.",
       icon: <Mail className="w-6 h-6" />
-    },
-    {
-      title: "Check your email",
-      description: "It'll arrive shortly—just a quick peek in your inbox!",
-      icon: <Mail className="w-6 h-6" />
-    },
-    {
-      title: "Enter the OTP",
-      description: "This keeps your account extra safe and sound.",
-      icon: <Shield className="w-6 h-6" />
     },
     {
       title: "Set a 4-digit PIN",
@@ -55,42 +43,17 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     
     try {
       if (step === 1) {
-        if (!name.trim() || !email.trim()) {
+        if (!name.trim()) {
           toast({
             title: "Missing information",
-            description: "Please enter both your name and email.",
+            description: "Please enter your name.",
             variant: "destructive"
           });
           setIsLoading(false);
           return;
         }
-        
-        // Simulate registration success (no backend required)
-        toast({
-          title: "OTP Sent!",
-          description: "Check your email for the verification code.",
-        });
         setStep(2);
       } else if (step === 2) {
-        setStep(3);
-      } else if (step === 3) {
-        if (otp.length !== 6) {
-          toast({
-            title: "Invalid OTP",
-            description: "Please enter the 6-digit code from your email.",
-            variant: "destructive"
-          });
-          setIsLoading(false);
-          return;
-        }
-        
-        // Simulate OTP verification (accept any 6-digit code)
-        toast({
-          title: "Email verified!",
-          description: "Now let's set up your PIN.",
-        });
-        setStep(4);
-      } else if (step === 4) {
         if (pin.length !== 4 || confirmPin.length !== 4) {
           toast({
             title: "Invalid PIN",
@@ -111,13 +74,13 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         }
         
         // Save user data to localStorage
-        const userData = { name, email, pin };
+        const userData = { name, email: `${name.toLowerCase().replace(/\s+/g, '')}@credittracker.com`, pin };
         localStorage.setItem('credit_tracker_user', JSON.stringify(userData));
         
-        setStep(5);
+        setStep(3);
         // Complete setup after a brief delay
         setTimeout(() => {
-          onComplete({ name, email, pin });
+          onComplete({ name, email: userData.email, pin });
         }, 2000);
       }
     } finally {
@@ -143,7 +106,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             
             {/* Progress indicators */}
             <div className="flex justify-center space-x-2 mb-6">
-              {Array.from({ length: 5 }, (_, i) => (
+              {Array.from({ length: 3 }, (_, i) => (
                 <div
                   key={i}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
@@ -173,66 +136,19 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               className="space-y-4"
             >
               {step === 1 && (
-                <>
-                  <div>
-                    <Label htmlFor="name">📝 Full Name</Label>
-                    <Input
-                      id="name"
-                      placeholder="Enter your full name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">✉️ Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                </>
+                <div>
+                  <Label htmlFor="name">📝 Full Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
               )}
 
               {step === 2 && (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Mail className="w-8 h-8 text-primary" />
-                  </div>
-                  <p className="text-muted-foreground">
-                    We've sent a verification code to <br />
-                    <span className="font-medium text-foreground">{email}</span>
-                  </p>
-                </div>
-              )}
-
-              {step === 3 && (
-                <div className="space-y-4">
-                  <Label htmlFor="otp" className="block text-center">🔐 Enter 6-digit OTP</Label>
-                  <div className="flex justify-center">
-                    <InputOTP
-                      maxLength={6}
-                      value={otp}
-                      onChange={setOtp}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                </div>
-              )}
-
-              {step === 4 && (
                 <>
                   <div>
                     <Label htmlFor="pin">🔢 Set 4-digit PIN</Label>
@@ -271,7 +187,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </>
               )}
 
-              {step === 5 && (
+              {step === 3 && (
                 <div className="text-center py-8">
                   <motion.div
                     initial={{ scale: 0 }}
@@ -294,7 +210,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             </motion.div>
           </AnimatePresence>
 
-          {step < 5 && (
+          {step < 3 && (
             <Button 
               onClick={handleNext}
               disabled={isLoading}
@@ -307,7 +223,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </div>
               ) : (
                 <div className="flex items-center justify-center space-x-2">
-                  <span>{step === 2 ? "I've checked" : step === 4 ? "Set PIN" : "Continue"}</span>
+                  <span>{step === 2 ? "Set PIN" : "Continue"}</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               )}

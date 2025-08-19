@@ -1,8 +1,10 @@
 import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownLeft, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowUpRight, ArrowDownLeft, Plus, Search } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 interface Transaction {
   id: string;
@@ -19,6 +21,13 @@ interface TransactionListProps {
 }
 
 export function TransactionList({ transactions, onAddTransaction }: TransactionListProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const filteredTransactions = transactions.filter(transaction =>
+    transaction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -26,17 +35,32 @@ export function TransactionList({ transactions, onAddTransaction }: TransactionL
       transition={{ duration: 0.8, delay: 0.6 }}
     >
       <GlassCard className="p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h3 className="text-base sm:text-lg font-semibold text-foreground">Recent Transactions</h3>
-          <Button onClick={onAddTransaction} size="sm" className="bg-primary hover:bg-primary/90 h-9 px-3 text-sm">
-            <Plus className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Add Transaction</span>
-            <span className="sm:hidden">Add</span>
-          </Button>
+        <div className="space-y-4 mb-4 sm:mb-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Recent Transactions</h3>
+          </div>
+          
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search transactions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-9"
+              />
+            </div>
+            <Button onClick={onAddTransaction} size="sm" className="bg-primary hover:bg-primary/90 h-9 px-3 text-sm">
+              <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Add Transaction</span>
+              <span className="sm:hidden">Add</span>
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-4">
-          {transactions.map((transaction, index) => (
+          {filteredTransactions.length > 0 ? (
+            filteredTransactions.map((transaction, index) => (
             <motion.div
               key={transaction.id}
               initial={{ opacity: 0, x: -20 }}
@@ -77,7 +101,20 @@ export function TransactionList({ transactions, onAddTransaction }: TransactionL
                 {transaction.type === "credit" ? "+" : "-"}${transaction.amount}
               </div>
             </motion.div>
-          ))}
+            ))
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <div className="text-4xl mb-4">
+                {searchTerm ? "🔍" : "💳"}
+              </div>
+              <p className="text-lg font-medium mb-2">
+                {searchTerm ? "No matching transactions" : "No transactions yet"}
+              </p>
+              <p className="text-sm">
+                {searchTerm ? "Try adjusting your search terms" : "Add your first transaction to get started!"}
+              </p>
+            </div>
+          )}
         </div>
       </GlassCard>
     </motion.div>

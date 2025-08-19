@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/dashboard/header";
 import { StatsCard } from "@/components/dashboard/stats-card";
-import { AnimatedChart } from "@/components/dashboard/animated-chart";
+import { TradingChart } from "@/components/dashboard/trading-chart";
 import { TransactionList } from "@/components/dashboard/transaction-list";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { LoginModal } from "@/components/auth/login-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,8 @@ export default function Dashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [user, setUser] = useState(getUser());
   const [isUserSetup, setIsUserSetup] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
 
   // Form states
@@ -34,8 +37,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) {
       setIsUserSetup(true);
+    } else if (!isLoggedIn) {
+      setIsLoginModalOpen(true);
     }
-  }, [user]);
+  }, [user, isLoggedIn]);
 
   const stats = getStats();
   const chartData = getMonthlyData();
@@ -78,6 +83,7 @@ export default function Dashboard() {
     const newUser = saveUser({ name: userData.name, email: userData.email, pin: userData.pin });
     setUser(newUser);
     setIsUserSetup(false);
+    setIsLoggedIn(true);
     
     toast({
       title: "Welcome!",
@@ -85,8 +91,41 @@ export default function Dashboard() {
     });
   };
 
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setIsLoginModalOpen(false);
+  };
+
+  // Transform chart data to include balance calculation
+  const chartDataWithBalance = chartData.map((item, index) => {
+    const prevBalance = index > 0 ? 
+      chartData.slice(0, index).reduce((acc, curr) => acc + curr.credits - curr.debits, 0) : 0;
+    return {
+      ...item,
+      balance: prevBalance + item.credits - item.debits
+    };
+  });
+
   if (isUserSetup) {
     return <OnboardingFlow onComplete={handleUserSetup} />;
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-4">Credit Tracker</h1>
+            <p className="text-muted-foreground">Please login to continue</p>
+          </div>
+        </div>
+        <LoginModal 
+          isOpen={isLoginModalOpen} 
+          onClose={() => setIsLoginModalOpen(false)}
+          onSuccess={handleLoginSuccess}
+        />
+      </>
+    );
   }
 
   return (
@@ -126,7 +165,7 @@ export default function Dashboard() {
 
         {/* Chart and Transactions */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
-          <AnimatedChart data={chartData} title="Spending Trends - 6 Month Overview" />
+          <TradingChart data={chartDataWithBalance} title="Balance Trends - 6 Month Overview" />
           <TransactionList
             transactions={transactions.slice(0, 8)}
             onAddTransaction={() => setIsDialogOpen(true)}
