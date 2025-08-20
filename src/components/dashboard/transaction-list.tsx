@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowUpRight, ArrowDownLeft, Plus, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { TransactionDetailModal } from "./transaction-detail-modal";
 
 interface Transaction {
   id: string;
@@ -18,10 +19,13 @@ interface Transaction {
 interface TransactionListProps {
   transactions: Transaction[];
   onAddTransaction: () => void;
+  onUpdateTransaction: (updatedTransaction: Transaction) => void;
 }
 
-export function TransactionList({ transactions, onAddTransaction }: TransactionListProps) {
+export function TransactionList({ transactions, onAddTransaction, onUpdateTransaction }: TransactionListProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
   const filteredTransactions = transactions.filter(transaction =>
     transaction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -71,7 +75,11 @@ export function TransactionList({ transactions, onAddTransaction }: TransactionL
                 type: "spring",
                 stiffness: 200
               }}
-              className="flex items-center justify-between p-3 sm:p-4 border border-glass-border rounded-lg backdrop-blur-sm hover:border-neon/30 transition-all duration-300"
+              className="flex items-center justify-between p-3 sm:p-4 border border-glass-border rounded-lg backdrop-blur-sm hover:border-neon/30 transition-all duration-300 cursor-pointer"
+              onClick={() => {
+                setSelectedTransaction(transaction);
+                setIsDetailModalOpen(true);
+              }}
             >
               <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
                 <div className={`p-1.5 sm:p-2 rounded-full shrink-0 ${
@@ -117,6 +125,20 @@ export function TransactionList({ transactions, onAddTransaction }: TransactionL
           )}
         </div>
       </GlassCard>
+
+      <TransactionDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedTransaction(null);
+        }}
+        transaction={selectedTransaction}
+        onUpdate={(updatedTransaction) => {
+          onUpdateTransaction(updatedTransaction);
+          setIsDetailModalOpen(false);
+          setSelectedTransaction(null);
+        }}
+      />
     </motion.div>
   );
 }

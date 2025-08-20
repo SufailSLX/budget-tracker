@@ -4,6 +4,7 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { TradingChart } from "@/components/dashboard/trading-chart";
 import { TransactionList } from "@/components/dashboard/transaction-list";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { FinancialWellness } from "@/components/dashboard/financial-wellness";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +75,12 @@ export default function Dashboard() {
     });
   };
 
+  const handleUpdateTransaction = (updatedTransaction: any) => {
+    setTransactions(transactions.map(t => 
+      t.id === updatedTransaction.id ? updatedTransaction : t
+    ));
+  };
+
   const handleUserSetup = (userData: { name: string; email: string; pin: string }) => {
     const newUser = saveUser({ name: userData.name, email: userData.email, pin: userData.pin });
     setUser(newUser);
@@ -141,8 +148,16 @@ export default function Dashboard() {
           <TransactionList
             transactions={transactions.slice(0, 8)}
             onAddTransaction={() => setIsDialogOpen(true)}
+            onUpdateTransaction={handleUpdateTransaction}
           />
         </div>
+
+        {/* Financial Wellness Dashboard */}
+        <FinancialWellness
+          totalCredits={stats.totalCredits.value}
+          totalDebits={stats.totalDebits.value}
+          balance={stats.balance.value}
+        />
 
         {/* Add Transaction Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

@@ -67,8 +67,9 @@ export function StatsCard({ title, value, change, icon, index }: StatsCardProps)
           >
             <AnimatedCounter value={value} duration={2} />
           </motion.div>
-          <p className="text-xs text-muted-foreground">
-            {isPositive ? "↗" : "↘"} {Math.abs(change)}% from last month
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />} 
+            {Math.abs(change)}% from last month
           </p>
         </div>
       </GlassCard>

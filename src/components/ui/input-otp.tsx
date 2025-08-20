@@ -34,6 +34,18 @@ const InputOTPSlot = React.forwardRef<
 >(({ index, className, ...props }, ref) => {
   const inputOTPContext = React.useContext(OTPInputContext)
   const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
+  const [showDot, setShowDot] = React.useState(false)
+
+  React.useEffect(() => {
+    if (char && char !== "") {
+      const timer = setTimeout(() => {
+        setShowDot(true)
+      }, 1500)
+      return () => clearTimeout(timer)
+    } else {
+      setShowDot(false)
+    }
+  }, [char])
 
   return (
     <div
@@ -45,7 +57,7 @@ const InputOTPSlot = React.forwardRef<
       )}
       {...props}
     >
-      {char}
+      {char && showDot ? "•" : char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h-4 w-px animate-caret-blink bg-foreground duration-1000" />

@@ -7,36 +7,21 @@ import { ArrowLeft, Moon, Sun, Heart, HelpCircle, Lock, Info, Star, MessageSquar
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/components/ui/theme-provider";
 import { Footer } from "@/components/ui/footer";
 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    const isDark = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
+  const { theme, setTheme } = useTheme();
+  const isDarkMode = theme === "dark";
 
   const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
+    const newTheme = isDarkMode ? "light" : "dark";
+    setTheme(newTheme);
     
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-
     toast({
-      title: newDarkMode ? "Dark mode enabled" : "Light mode enabled",
+      title: newTheme === "dark" ? "Dark mode enabled" : "Light mode enabled",
       description: "Your theme preference has been saved.",
     });
   };
@@ -95,7 +80,7 @@ const Settings = () => {
             <GlassCard className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  {darkMode ? <Moon className="h-6 w-6 text-primary" /> : <Sun className="h-6 w-6 text-primary" />}
+                  {isDarkMode ? <Moon className="h-6 w-6 text-primary" /> : <Sun className="h-6 w-6 text-primary" />}
                   <div>
                     <h3 className="font-semibold">Dark Mode</h3>
                     <p className="text-sm text-muted-foreground">
@@ -104,7 +89,7 @@ const Settings = () => {
                   </div>
                 </div>
                 <Switch
-                  checked={darkMode}
+                  checked={isDarkMode}
                   onCheckedChange={toggleDarkMode}
                 />
               </div>
