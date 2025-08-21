@@ -13,15 +13,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Footer } from "@/components/ui/footer";
-import { getTransactions, saveTransaction, getMonthlyData, getStats, getCategories, getUser, saveUser } from "@/utils/storage";
+import { getUser } from "@/utils/storage";
+import { transactionsAPI } from "@/utils/api";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {
-  const [transactions, setTransactions] = useState(getTransactions());
+  const [transactions, setTransactions] = useState([]);
+  const [stats, setStats] = useState({ totalCredits: { value: 0, change: 0 }, totalDebits: { value: 0, change: 0 }, balance: { value: 0, change: 0 } });
+  const [chartData, setChartData] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [user, setUser] = useState(getUser());
-  const [isUserSetup, setIsUserSetup] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   // Form states
@@ -32,17 +35,118 @@ export default function Dashboard() {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
-  useEffect(() => {
-    if (!user) {
-      setIsUserSetup(true);
-    }
-  }, [user]);
+  const categories = [
+    'Food & Dining',
+    'Transportation', 
+    'Shopping',
+    'Entertainment',
+    'Bills & Utilities',
+    'Health & Fitness',
+    'Travel',
+    'Education',
+    'Salary',
+    'Freelance',
+    'Investment',
+    'Other'
+  ];
 
-  const stats = getStats();
-  const chartData = getMonthlyData();
-  const categories = getCategories();
+  useEffect(() => {
+    loadTransactions();
+  }, []);
+
+  const loadTransactions = async () => {
+    try {
+      setLoading(true);
+      const response = await transactionsAPI.getAll();
+      
+      if (response.success) {
+        setTransactions(response.transactions || []);
+        calculateStats(response.transactions || []);
+        generateChartData(response.transactions || []);
+      } else {
+        console.error('Failed to load transactions:', response.message);
+        toast({
+          title: "Error",
+          description: "Failed to load transactions",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+      toast({
+        title: "Error", 
+        description: "Unable to connect to server",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateStats = (transactionList: any[]) => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    const currentMonthTransactions = transactionList.filter(t => {
+      const transactionDate = new Date(t.date);
+      return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear;
+    });
+    
+    const totalCredits = currentMonthTransactions
+      .filter(t => t.type === 'credit')
+      .reduce((sum, t) => sum + t.amount, 0);
+      
+    const totalDebits = currentMonthTransactions
+      .filter(t => t.type === 'debit')
+      .reduce((sum, t) => sum + t.amount, 0);
+      
+    const balance = totalCredits - totalDebits;
+    
+    // Calculate changes (mock for now)
+    setStats({
+      totalCredits: { value: totalCredits, change: 12 },
+      totalDebits: { value: totalDebits, change: -5 },
+      balance: { value: balance, change: 8 }
+    });
+  };
+
+  const generateChartData = (transactionList: any[]) => {
+    const last6Months = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      
+      const monthTransactions = transactionList.filter(t => {
+        const txDate = new Date(t.date);
+        return txDate >= monthStart && txDate <= monthEnd;
+      });
+      
+      const credits = monthTransactions
+        .filter(t => t.type === 'credit')
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      const debits = monthTransactions
+        .filter(t => t.type === 'debit')
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      last6Months.push({
+        name: monthName,
+        credits,
+        debits,
+        balance: credits - debits
+      });
+    }
+    
+    setChartData(last6Months);
+  };
 
   const handleAddTransaction = () => {
+    handleAddTransaction = async () => {
     if (!title || !amount) {
       toast({
         title: "Error",
@@ -52,27 +156,47 @@ export default function Dashboard() {
       return;
     }
 
-    const newTransaction = saveTransaction({
-      title,
-      amount: parseFloat(amount),
-      type,
-      category: category || "Other",
-      date,
-      description
-    });
+    try {
+      const response = await transactionsAPI.create({
+        title,
+        amount: parseFloat(amount),
+        type,
+        category: category || "Other",
+        date,
+        description
+      });
+      
+      if (response.success) {
+        // Reload transactions to get updated data
+        await loadTransactions();
+        
+        setTitle("");
+        setAmount("");
+        setCategory("");
+        setDescription("");
+        setDate(new Date().toISOString().split('T')[0]);
+        setIsDialogOpen(false);
 
-    setTransactions([newTransaction, ...transactions]);
-    setTitle("");
-    setAmount("");
-    setCategory("");
-    setDescription("");
-    setDate(new Date().toISOString().split('T')[0]);
-    setIsDialogOpen(false);
-
-    toast({
-      title: "Success",
-      description: `${type === "credit" ? "Credit" : "Debit"} added successfully!`,
-    });
+        toast({
+          title: "Success",
+          description: `${type === "credit" ? "Credit" : "Debit"} added successfully!`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to add transaction",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      toast({
+        title: "Error",
+        description: "Unable to connect to server",
+        variant: "destructive"
+      });
+    }
+  };
   };
 
   const handleUpdateTransaction = (updatedTransaction: any) => {
@@ -81,31 +205,26 @@ export default function Dashboard() {
     ));
   };
 
-  const handleUserSetup = (userData: { name: string; email: string; pin: string }) => {
-    const newUser = saveUser({ name: userData.name, email: userData.email, pin: userData.pin });
-    setUser(newUser);
-    setIsUserSetup(false);
-    
-    toast({
-      title: "Welcome!",
-      description: `Welcome to Credit Tracker, ${userData.name}!`,
-    });
-  };
-
   // Transform chart data to include balance calculation
-  const chartDataWithBalance = chartData.map((item, index) => {
-    const prevBalance = index > 0 ? 
-      chartData.slice(0, index).reduce((acc, curr) => acc + curr.credits - curr.debits, 0) : 0;
+  const chartDataWithBalance = chartData.map((item: any, index: number) => {
+    const prevBalance = index > 0 ?
+      chartData.slice(0, index).reduce((acc: number, curr: any) => acc + curr.credits - curr.debits, 0) : 0;
     return {
       ...item,
       balance: prevBalance + item.credits - item.debits
     };
   });
 
-  if (isUserSetup) {
-    return <OnboardingFlow onComplete={handleUserSetup} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
   }
-
 
   return (
     <div className="min-h-screen bg-background">

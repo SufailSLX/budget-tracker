@@ -7,6 +7,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { GlassCard } from "@/components/ui/glass-card";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronRight, Mail, Shield, Key, Sparkles } from "lucide-react";
+import { authAPI } from "@/utils/api";
+import { saveUser } from "@/utils/storage";
 
 interface OnboardingFlowProps {
   onComplete: (userData: { name: string; email: string; pin: string }) => void;
@@ -15,6 +17,7 @@ interface OnboardingFlowProps {
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -43,15 +46,28 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     
     try {
       if (step === 1) {
-        if (!name.trim()) {
+        if (!name.trim() || !email.trim()) {
           toast({
             title: "Missing information",
-            description: "Please enter your name.",
+            description: "Please enter your name and email.",
             variant: "destructive"
           });
           setIsLoading(false);
           return;
         }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          toast({
+            title: "Invalid email",
+            description: "Please enter a valid email address.",
+            variant: "destructive"
+          });
+          setIsLoading(false);
+          return;
+        }
+        
         setStep(2);
       } else if (step === 2) {
         if (pin.length !== 4 || confirmPin.length !== 4) {
@@ -73,15 +89,46 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           return;
         }
         
-        // Save user data to localStorage
-        const userData = { name, email: `${name.toLowerCase().replace(/\s+/g, '')}@credittracker.com`, pin };
-        localStorage.setItem('credit_tracker_user', JSON.stringify(userData));
-        
-        setStep(3);
-        // Complete setup after a brief delay
-        setTimeout(() => {
-          onComplete({ name, email: userData.email, pin });
-        }, 2000);
+        // Register user with backend
+        try {
+          const response = await authAPI.register({ name, email, pin });
+          
+          if (response.success) {
+            // Save user data and token
+            const userData = {
+              id: response.user.id,
+              name: response.user.name,
+              email: response.user.email,
+              token: response.token,
+              createdAt: Date.now()
+            };
+            
+            saveUser(userData);
+            
+            setStep(3);
+            // Complete setup after a brief delay
+            setTimeout(() => {
+              onComplete({ name: response.user.name, email: response.user.email, pin });
+            }, 2000);
+          } else {
+            toast({
+              title: "Registration failed",
+              description: response.message || "Please try again.",
+              variant: "destructive"
+            });
+            setIsLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Registration error:', error);
+          toast({
+            title: "Registration failed",
+            description: "Unable to connect to server. Please try again.",
+            variant: "destructive"
+          });
+          setIsLoading(false);
+          return;
+        }
       }
     } finally {
       setIsLoading(false);
@@ -137,6 +184,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             >
               {step === 1 && (
                 <div>
+                  <div className="mb-4">
                   <Label htmlFor="name">📝 Full Name</Label>
                   <Input
                     id="name"
@@ -145,6 +193,18 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     onChange={(e) => setName(e.target.value)}
                     className="mt-1"
                   />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">📧 Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -223,7 +283,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </div>
               ) : (
                 <div className="flex items-center justify-center space-x-2">
-                  <span>{step === 2 ? "Set PIN" : "Continue"}</span>
+                  <span>{step === 2 ? "Create Account" : "Continue"}</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               )}
